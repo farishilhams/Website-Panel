@@ -5,6 +5,7 @@
   "version": "2.1.0",
   "scripts": {
     "dev": "vite",
+    "dev:all": "concurrently \"node server.js\" \"vite\"",
     "build": "vite build",
     "preview": "vite preview",
     "server": "node server.js",
