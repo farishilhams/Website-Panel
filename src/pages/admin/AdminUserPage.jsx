@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../../utils/api";
+import { getAuthUserId } from "../../utils/authHelper";
 import Header from "../../components/admin/Header";
 import ConfirmModal from "../../components/shared/ConfirmModal";
 import {
@@ -138,6 +139,24 @@ export default function AdminUserPage() {
         address_users: editFormData.address,
         role: editFormData.role,
       });
+
+      // Jika akun yang diedit adalah akun yang sedang login, update sesi & header atas seketika
+      const currentLoggedInId = getAuthUserId();
+      if (currentLoggedInId && parseInt(selectedUser.id_users) === parseInt(currentLoggedInId)) {
+        const newUsername = editFormData.username?.trim() || "";
+        sessionStorage.setItem("username", newUsername);
+        if (editFormData.role) {
+          sessionStorage.setItem("role", editFormData.role);
+        }
+        window.dispatchEvent(
+          new CustomEvent("user-profile-updated", {
+            detail: {
+              username: newUsername,
+              role: editFormData.role,
+            },
+          })
+        );
+      }
 
       showToast("Data pengguna berhasil diperbarui!");
       setIsEditModalOpen(false);
