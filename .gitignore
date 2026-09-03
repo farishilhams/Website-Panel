@@ -1,0 +1,50 @@
+# Dependencies
+node_modules/
+*/node_modules/
+*/*/node_modules/
+
+# Environment variables & secrets (CRITICAL: Never commit .env to GitHub)
+.env
+.env.*
+*.env
+*/.env
+*/.env.*
+*/*/.env
+*/*/.env.*
+!.env.example
+!*/.env.example
+!*/*/.env.example
+
+# Production build outputs
+dist/
+dist-ssr/
+build/
+*/dist/
+*/build/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Uploads & local media cache
+uploads/*
+*/uploads/*
+!uploads/.gitkeep
+!*/uploads/.gitkeep
+
+# Operating system & Editor files
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

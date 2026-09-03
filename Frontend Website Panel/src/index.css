@@ -1,0 +1,344 @@
+@import "tailwindcss";
+
+@layer base {
+  * {
+    font-family: 'Poppins', sans-serif;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f8fafc;
+    color: #1e293b;
+    overflow-x: hidden;
+  }
+
+  /* Prevent browser default black box outline on inputs */
+  input, textarea, select {
+    outline: none !important;
+  }
+}
+
+/* =====================================================
+   MPStore Brand CSS Variables
+   Biru: #0033CC  |  Hijau: #00BB33
+   ===================================================== */
+:root {
+  --mp-blue: #0033CC;
+  --mp-blue-light: #2255EE;
+  --mp-blue-dark: #001F99;
+  --mp-green: #00BB33;
+  --mp-green-light: #00DD44;
+  --mp-green-dark: #008822;
+  --mp-bg-dark: #0A0D14;
+  --mp-bg-card: #111827;
+  --mp-border: rgba(255,255,255,0.08);
+}
+
+/* =====================================================
+   Custom Smooth Scrollbar
+   ===================================================== */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+::-webkit-scrollbar-thumb {
+  background: #1e3a8a;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #0033CC;
+}
+
+/* =====================================================
+   Glassmorphism Utilities
+   ===================================================== */
+.glass {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+.glass-dark {
+  background: rgba(10, 13, 20, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255,255,255,0.07);
+}
+.glass-mp {
+  background: rgba(0, 51, 204, 0.1);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(0, 51, 204, 0.2);
+}
+
+/* =====================================================
+   Autofill Styling for Dark Inputs (Always Pure White Text)
+   ===================================================== */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px #0c121e inset !important;
+  box-shadow: 0 0 0 1000px #0c121e inset !important;
+  -webkit-text-fill-color: #ffffff !important;
+  color: #ffffff !important;
+  caret-color: #ffffff !important;
+}
+
+/* =====================================================
+   Keyframe Animations
+   ===================================================== */
+
+/* Fade In */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Scale Up (modal entrance) */
+@keyframes scaleUp {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* Float (logo / badge hover) */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-8px); }
+}
+
+/* Glow Pulse — Blue */
+@keyframes glowBlue {
+  0%, 100% { box-shadow: 0 0 15px rgba(0, 51, 204, 0.4); }
+  50%       { box-shadow: 0 0 35px rgba(0, 51, 204, 0.8); }
+}
+
+/* Glow Pulse — Green */
+@keyframes glowGreen {
+  0%, 100% { box-shadow: 0 0 15px rgba(0, 187, 51, 0.4); }
+  50%       { box-shadow: 0 0 35px rgba(0, 187, 51, 0.8); }
+}
+
+/* Subtle glow animation for active items */
+@keyframes glowPulseSubtle {
+  0%, 100% {
+    box-shadow: 0 0 8px rgba(0, 187, 51, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(0, 187, 51, 0.6);
+  }
+}
+
+/* Shimmer Skeleton */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+/* Marquee / Ticker */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+/* Slide In from Left */
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-30px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* Slide In from Right */
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(30px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+/* Slide In from Bottom */
+@keyframes slideInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Spin (loading) */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Orb drift for backgrounds */
+@keyframes orbDrift {
+  0%   { transform: translate(0px, 0px) scale(1); }
+  33%  { transform: translate(30px, -20px) scale(1.05); }
+  66%  { transform: translate(-20px, 15px) scale(0.97); }
+  100% { transform: translate(0px, 0px) scale(1); }
+}
+
+/* Typing cursor blink */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+/* =====================================================
+   Animation Utility Classes
+   ===================================================== */
+.animate-fade-in      { animation: fadeIn 0.35s ease-out forwards; }
+.animate-scale-up     { animation: scaleUp 0.3s ease-out forwards; }
+.animate-float        { animation: float 3s ease-in-out infinite; }
+.animate-glow-blue    { animation: glowBlue 3s infinite; }
+.animate-glow-green   { animation: glowGreen 3s infinite; }
+.animate-glow-subtle  { animation: glowPulseSubtle 2.5s infinite; }
+.animate-shimmer      { background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+.animate-marquee      { animation: marquee 30s linear infinite; }
+.animate-slide-left   { animation: slideInLeft 0.5s ease-out forwards; }
+.animate-slide-right  { animation: slideInRight 0.5s ease-out forwards; }
+.animate-slide-up     { animation: slideInUp 0.4s ease-out forwards; }
+.animate-spin         { animation: spin 1s linear infinite; }
+.animate-orb          { animation: orbDrift 8s ease-in-out infinite; }
+.animate-blink        { animation: blink 1s step-end infinite; }
+
+/* Stagger delays */
+.delay-0   { animation-delay: 0s; }
+.delay-60  { animation-delay: 0.06s; }
+.delay-100 { animation-delay: 0.1s; }
+.delay-120 { animation-delay: 0.12s; }
+.delay-180 { animation-delay: 0.18s; }
+.delay-200 { animation-delay: 0.2s; }
+.delay-240 { animation-delay: 0.24s; }
+.delay-300 { animation-delay: 0.3s; }
+.delay-400 { animation-delay: 0.4s; }
+.delay-500 { animation-delay: 0.5s; }
+
+/* Pulse ring (notification indicator) */
+@keyframes pulseRing {
+  0%   { transform: scale(0.85); box-shadow: 0 0 0 0 rgba(0,187,51,0.5); }
+  70%  { transform: scale(1);    box-shadow: 0 0 0 10px rgba(0,187,51,0); }
+  100% { transform: scale(0.85); box-shadow: 0 0 0 0 rgba(0,187,51,0); }
+}
+.animate-pulse-ring { animation: pulseRing 2s infinite; }
+
+/* Slide In Card — for dashboard cards */
+@keyframes slideInCard {
+  from { opacity: 0; transform: translateY(16px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.animate-slide-card { animation: slideInCard 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+/* =====================================================
+   MPStore Brand Utility Classes
+   ===================================================== */
+.bg-mp-blue   { background-color: var(--mp-blue); }
+.bg-mp-green  { background-color: var(--mp-green); }
+.text-mp-blue  { color: var(--mp-blue); }
+.text-mp-green { color: var(--mp-green); }
+.border-mp-blue  { border-color: var(--mp-blue); }
+.border-mp-green { border-color: var(--mp-green); }
+
+.btn-mp-blue {
+  background: linear-gradient(135deg, var(--mp-blue) 0%, var(--mp-blue-light) 100%);
+  color: white;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+.btn-mp-blue:hover {
+  background: linear-gradient(135deg, var(--mp-blue-light) 0%, var(--mp-blue) 100%);
+  box-shadow: 0 0 24px rgba(0, 51, 204, 0.5);
+  transform: translateY(-2px);
+}
+
+.btn-mp-green {
+  background: linear-gradient(135deg, var(--mp-green) 0%, var(--mp-green-light) 100%);
+  color: white;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+.btn-mp-green:hover {
+  background: linear-gradient(135deg, var(--mp-green-light) 0%, var(--mp-green) 100%);
+  box-shadow: 0 0 24px rgba(0, 187, 51, 0.5);
+  transform: translateY(-2px);
+}
+
+.gradient-mp {
+  background: linear-gradient(135deg, var(--mp-blue) 0%, #1a1a6e 50%, var(--mp-green) 100%);
+}
+
+/* =====================================================
+   Hide Scrollbar Utility
+   ===================================================== */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.custom-scrollbar::-webkit-scrollbar { width: 4px; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #1e3a8a; border-radius: 9999px; }
+
+/* =====================================================
+   Responsive Layout & Card Interactions
+   ===================================================== */
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(4px);
+  z-index: 30;
+}
+
+/* Interactive card hover */
+.card-hover {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease;
+}
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 36px rgba(0, 51, 204, 0.15);
+}
+
+.card-interactive {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.card-interactive:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: 0 16px 36px -8px rgba(0, 51, 204, 0.25);
+}
+
+/* Input focus ring without black box shadow */
+.input-mp {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: white;
+  outline: none !important;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.input-mp:focus {
+  border-color: var(--mp-blue);
+  box-shadow: 0 0 0 3px rgba(0, 51, 204, 0.25);
+}
+.input-mp::placeholder {
+  color: rgba(255,255,255,0.35);
+}
+
+/* Stat card glow */
+.stat-card-blue {
+  border: 1px solid rgba(0, 51, 204, 0.25);
+  background: rgba(0, 51, 204, 0.08);
+  transition: all 0.25s;
+}
+.stat-card-blue:hover {
+  border-color: rgba(0, 51, 204, 0.5);
+  box-shadow: 0 0 20px rgba(0, 51, 204, 0.25);
+  transform: translateY(-2px);
+}
+.stat-card-green {
+  border: 1px solid rgba(0, 187, 51, 0.25);
+  background: rgba(0, 187, 51, 0.08);
+  transition: all 0.25s;
+}
+.stat-card-green:hover {
+  border-color: rgba(0, 187, 51, 0.5);
+  box-shadow: 0 0 20px rgba(0, 187, 51, 0.25);
+  transform: translateY(-2px);
+}
