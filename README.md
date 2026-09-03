@@ -1,7 +1,5 @@
 # 🏬 MPStore Web Panel
 
-> **Platform Web Panel Manajemen Ekosistem Digital MPStore Berbasis Role-Based Access Control (RBAC) 5 Tingkat Pengguna Menggunakan Integrasi Express.js RESTful API, React 19 + Vite, dan Database Cloud Supabase PostgreSQL**
-
 Platform panel terpadu **MPStore Indonesia** berbasis **Monorepo** yang mengintegrasikan aplikasi Frontend dan Backend dengan sistem keamanan bertingkat, 5 peran pengguna (*Role-Based Access Control / RBAC*), dan desain modern responsif (*Mobile-First*).
 
 ---
