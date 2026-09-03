@@ -46,10 +46,14 @@ app.use(bodyParser.urlencoded({ extended: true })); // Untuk parsing request den
 
 const fs = require("fs");
 
-// Ensure uploads folder exists
+// Ensure uploads folder exists (safe for read-only serverless environments like Vercel)
 const uploadsDir = path.join(__dirname, "uploads");
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
+try {
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
+} catch (e) {
+  // Silent fail in read-only serverless environment
 }
 
 app.use("/uploads", express.static(uploadsDir));
