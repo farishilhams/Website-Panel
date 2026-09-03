@@ -61,6 +61,24 @@ export default function AdminUserPage() {
     setTimeout(() => setToast({ show: false, msg: "", type: "success" }), 3500);
   };
 
+  const getUserAvatarPreset = (user) => {
+    if (!user) return "from-blue-600 to-indigo-600";
+    return (
+      localStorage.getItem(`mp_user_avatar_preset_${user.id_users}`) ||
+      user.avatar_preset ||
+      "from-blue-600 to-indigo-600"
+    );
+  };
+
+  const getUserAvatarCustom = (user) => {
+    if (!user) return "";
+    return (
+      localStorage.getItem(`mp_user_avatar_custom_${user.id_users}`) ||
+      user.avatar_custom ||
+      ""
+    );
+  };
+
   useEffect(() => {
     fetchUsers();
   }, [page, roleFilter, searchTerm]);
@@ -288,17 +306,17 @@ export default function AdminUserPage() {
               >
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    {u.avatar_custom ? (
+                    {getUserAvatarCustom(u) ? (
                       <img
-                        src={u.avatar_custom}
+                        src={getUserAvatarCustom(u)}
                         alt={u.username_users}
                         className="w-11 h-11 rounded-2xl object-cover border-2 border-blue-500/40 shadow-sm shrink-0"
                       />
                     ) : (
                       <div
-                        className={`w-11 h-11 rounded-2xl text-white font-black flex items-center justify-center text-sm shadow-sm shrink-0 bg-gradient-to-tr ${
-                          u.avatar_preset || "from-blue-600 to-indigo-600"
-                        }`}
+                        className={`w-11 h-11 rounded-2xl text-white font-black flex items-center justify-center text-sm shadow-sm shrink-0 bg-gradient-to-tr ${getUserAvatarPreset(
+                          u
+                        )}`}
                       >
                         {u.username_users?.charAt(0).toUpperCase() || "U"}
                       </div>
@@ -554,17 +572,17 @@ export default function AdminUserPage() {
               </button>
 
               <div className="flex items-center gap-4">
-                {detailUser.avatar_custom ? (
+                {getUserAvatarCustom(detailUser) ? (
                   <img
-                    src={detailUser.avatar_custom}
+                    src={getUserAvatarCustom(detailUser)}
                     alt={detailUser.username_users}
                     className="w-16 h-16 rounded-2xl object-cover border-2 border-white/40 shadow-lg shrink-0"
                   />
                 ) : (
                   <div
-                    className={`w-16 h-16 rounded-2xl font-black text-2xl flex items-center justify-center shadow-lg shrink-0 bg-gradient-to-tr ${
-                      detailUser.avatar_preset || "from-blue-600 to-indigo-600"
-                    }`}
+                    className={`w-16 h-16 rounded-2xl font-black text-2xl flex items-center justify-center shadow-lg shrink-0 bg-gradient-to-tr ${getUserAvatarPreset(
+                      detailUser
+                    )}`}
                   >
                     {detailUser.username_users?.charAt(0).toUpperCase() || "U"}
                   </div>

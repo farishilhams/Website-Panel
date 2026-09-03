@@ -5,29 +5,74 @@ const path = require("path");
 const User = require("../models/user.model");
 const { jwtSecret } = require("../config/config");
 
+const supabase = require("../config/supabase");
+const { supabaseBucket } = require("../config/config");
+
 const AVATARS_FILE = path.join(__dirname, "../uploads/user_avatars.json");
 
-const getAvatarsStore = () => {
-  try {
-    if (!fs.existsSync(AVATARS_FILE)) return {};
-    const content = fs.readFileSync(AVATARS_FILE, "utf-8");
-    return JSON.parse(content || "{}");
-  } catch (err) {
-    console.error("Error reading avatars store:", err);
-    return {};
+let memoryAvatars = {};
+let lastFetchTime = 0;
+
+const getAvatarsStore = async () => {
+  const now = Date.now();
+  if (Object.keys(memoryAvatars).length > 0 && now - lastFetchTime < 15000) {
+    return memoryAvatars;
   }
+  if (process.env.SUPABASE_URL && process.env.SUPABASE_KEY && process.env.SUPABASE_URL !== "https://your-project-id.supabase.co") {
+    try {
+      const { data, error } = await supabase.storage
+        .from(supabaseBucket)
+        .download("avatars/user_avatars.json");
+      if (!error && data) {
+        const text = await data.text();
+        memoryAvatars = JSON.parse(text || "{}");
+        lastFetchTime = now;
+        return memoryAvatars;
+      }
+    } catch (err) {
+      console.warn("Storage avatars download warning:", err.message);
+    }
+  }
+  try {
+    if (fs.existsSync(AVATARS_FILE)) {
+      const content = fs.readFileSync(AVATARS_FILE, "utf-8");
+      memoryAvatars = JSON.parse(content || "{}");
+      return memoryAvatars;
+    }
+  } catch (_) {}
+  return memoryAvatars;
 };
 
-const saveAvatarStore = (id, { avatar_custom, avatar_preset }) => {
+const saveAvatarStore = async (id, { avatar_custom, avatar_preset }) => {
   try {
-    const store = getAvatarsStore();
+    const store = await getAvatarsStore();
     const strId = String(id);
     store[strId] = {
       avatar_custom: avatar_custom !== undefined ? avatar_custom : (store[strId]?.avatar_custom || ""),
       avatar_preset: avatar_preset !== undefined ? avatar_preset : (store[strId]?.avatar_preset || "from-blue-600 to-indigo-600"),
       updated_at: new Date().toISOString(),
     };
-    fs.writeFileSync(AVATARS_FILE, JSON.stringify(store, null, 2), "utf-8");
+    memoryAvatars = store;
+    lastFetchTime = Date.now();
+
+    if (process.env.SUPABASE_URL && process.env.SUPABASE_KEY && process.env.SUPABASE_URL !== "https://your-project-id.supabase.co") {
+      try {
+        const buffer = Buffer.from(JSON.stringify(store, null, 2));
+        await supabase.storage
+          .from(supabaseBucket)
+          .upload("avatars/user_avatars.json", buffer, { upsert: true, contentType: "application/json" });
+      } catch (uploadErr) {
+        console.warn("Storage avatars upload warning:", uploadErr.message);
+      }
+    }
+
+    try {
+      if (!fs.existsSync(path.dirname(AVATARS_FILE))) {
+        fs.mkdirSync(path.dirname(AVATARS_FILE), { recursive: true });
+      }
+      fs.writeFileSync(AVATARS_FILE, JSON.stringify(store, null, 2), "utf-8");
+    } catch (_) {}
+
     return store[strId];
   } catch (err) {
     console.error("Error saving avatar store:", err);
@@ -235,9 +280,10 @@ exports.updateUserById = async (req, res) => {
     // Simpan avatar jika dikirim
     let savedAvatar = {};
     if (avatar_custom !== undefined || avatar_preset !== undefined) {
-      savedAvatar = saveAvatarStore(id, { avatar_custom, avatar_preset }) || {};
+      savedAvatar = (await saveAvatarStore(id, { avatar_custom, avatar_preset })) || {};
     } else {
-      savedAvatar = getAvatarsStore()[String(id)] || {};
+      const allAvatars = await getAvatarsStore();
+      savedAvatar = allAvatars[String(id)] || {};
     }
 
     res.status(200).json({
@@ -268,7 +314,8 @@ exports.getUserId = async (req, res) => {
     if (!user)
       return res.status(404).json({ message: "Pengguna tidak ditemukan" });
 
-    const avatarData = getAvatarsStore()[String(id)] || {};
+    const allAvatars = await getAvatarsStore();
+    const avatarData = allAvatars[String(id)] || {};
 
     res.status(200).json({
       ...user,
@@ -328,7 +375,7 @@ exports.getSearchPaginatedUsers = async (req, res) => {
       offset,
     });
 
-    const avatars = getAvatarsStore();
+    const avatars = await getAvatarsStore();
     const enrichedUsers = users.map((u) => ({
       ...u,
       avatar_custom: avatars[String(u.id_users)]?.avatar_custom || "",
