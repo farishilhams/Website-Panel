@@ -1,5 +1,5 @@
 const Interaksi = require("../models/interaksi.model");
-const ExcelJS = require("exceljs");
+const XLSX = require("xlsx");
 
 // Controller untuk menambah data interaksi
 exports.createInteraksi = async (req, res) => {
@@ -87,29 +87,11 @@ exports.exportExcelInteraksi = async (req, res) => {
       return res.status(404).json({ message: "Tidak ada data untuk diexport" });
     }
 
-    // Buat workbook dan worksheet baru
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet("Interaksi");
-
-    // Set kolom header untuk Excel
-    worksheet.columns = [
-      { header: "ID Interaksi", key: "id_interaksi", width: 15 },
-      { header: "Reseller", key: "reseller_name", width: 25 },
-      { header: "Referensi", key: "reference_name", width: 25 },
-      { header: "Created At", key: "created_at", width: 20 },
-      { header: "Updated At", key: "updated_at", width: 20 },
-    ];
-
-    // Tambahkan data ke worksheet
-    interaksi.forEach((row) => {
-      worksheet.addRow({
-        id_interaksi: row.id_interaksi,
-        reseller_name: row.reseller_name,
-        reference_name: row.reference_name,
-        created_at: row.created_at,
-        updated_at: row.updated_at,
-      });
-    });
+    // Buat workbook dan worksheet baru menggunakan XLSX
+    const ws = XLSX.utils.json_to_sheet(interaksi);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Interaksi");
+    const buf = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
 
     // Set header response untuk download file Excel
     res.setHeader(
@@ -118,9 +100,7 @@ exports.exportExcelInteraksi = async (req, res) => {
     );
     res.setHeader("Content-Disposition", "attachment; filename=interaksi.xlsx");
 
-    // Write workbook ke response dan end response
-    await workbook.xlsx.write(res);
-    res.end();
+    res.send(buf);
   } catch (err) {
     console.error("Export Excel Error:", err);
     res.status(500).json({ message: "Gagal export Excel" });

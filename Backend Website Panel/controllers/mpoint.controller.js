@@ -1,5 +1,5 @@
 const Mpoint = require("../models/mpoint.model");
-const ExcelJS = require("exceljs");
+const XLSX = require("xlsx");
 
 // Controller untuk membuat data mpoint baru
 exports.createMpoint = async (req, res) => {
@@ -141,29 +141,11 @@ exports.exportMpointToExcel = async (req, res) => {
       return res.status(404).json({ message: "Tidak ada data untuk diexport" });
     }
 
-    // Buat workbook dan worksheet baru 
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet("Mpoint");
-
-    // Set kolom header untuk Excel
-    worksheet.columns = [
-      { header: "ID Reseller", key: "idreseller", width: 15 },
-      { header: "Nama Toko", key: "nama_toko", width: 25 },
-      { header: "Alamat", key: "alamat", width: 30 },
-      { header: "Status", key: "status", width: 10 },
-      { header: "Latitude", key: "latitude", width: 15 },
-      { header: "Longitude", key: "longitude", width: 15 },
-      { header: "Telepon", key: "telp", width: 15 },
-      { header: "Tipe Toko", key: "tipe_toko", width: 15 },
-      { header: "Jam Buka", key: "jam_buka", width: 15 },
-      { header: "Created At", key: "created_at", width: 20 },
-      { header: "Created By", key: "created_by", width: 12 },
-      { header: "Updated At", key: "updated_at", width: 20 },
-      { header: "Updated By", key: "updated_by", width: 12 },
-    ];
-
-    // Tambahkan setiap row data ke worksheet
-    result.forEach((row) => worksheet.addRow(row));
+    // Buat workbook dan worksheet baru menggunakan XLSX
+    const ws = XLSX.utils.json_to_sheet(result);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Mpoint");
+    const buf = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
 
     // Set header response untuk download excel file
     res.setHeader(
@@ -175,9 +157,7 @@ exports.exportMpointToExcel = async (req, res) => {
       `attachment; filename="mpoint.xlsx"`
     );
 
-    // Write workbook ke response dan end
-    await workbook.xlsx.write(res);
-    res.end();
+    res.send(buf);
   } catch (error) {
     console.error("Export Mpoint Error:", error);
     res.status(500).json({ message: "Gagal export Excel mpoint" });

@@ -1,5 +1,5 @@
 const NewsReports = require("../models/news_reports.model");
-const ExcelJS = require("exceljs");
+const XLSX = require("xlsx");
 
 // Controller untuk menghitung jumlah views news report
 exports.trackNewsViews = async (req, res) => {
@@ -91,32 +91,11 @@ exports.exportNewsReportsToExcel = async (req, res) => {
     }
 
     // Buat workbook dan worksheet baru
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet("Laporan Berita");
-
-    // Set kolom header untuk Excel
-    worksheet.columns = [
-      { header: "ID", key: "id", width: 10 },
-      { header: "ID User", key: "id_users", width: 10 },
-      { header: "Username", key: "username", width: 20 },
-      { header: "ID Berita", key: "id_berita", width: 10 },
-      { header: "Judul Berita", key: "judul_berita", width: 30 },
-      { header: "Jumlah Views", key: "jumlah", width: 15 },
-      { header: "Created At", key: "created_at", width: 25 },
-    ];
-
-    // Isi data baris
-    data.forEach((row) => {
-      worksheet.addRow({
-        id: row.id,
-        id_users: row.id_users,
-        username: row.username,
-        id_berita: row.id_berita,
-        judul_berita: row.judul_berita,
-        jumlah: row.jumlah,
-        created_at: row.created_at,
-      });
-    });
+    // Buat workbook dan worksheet menggunakan XLSX
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Laporan Berita");
+    const buf = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
 
     // Set response header
     res.setHeader(
@@ -128,9 +107,7 @@ exports.exportNewsReportsToExcel = async (req, res) => {
       "attachment; filename=news_reports.xlsx"
     );
 
-    // Write workbook ke response dan end
-    await workbook.xlsx.write(res);
-    res.end();
+    res.send(buf);
   } catch (err) {
     console.error("Export Excel News Reports Error:", err);
     res.status(500).json({ message: "Gagal export Excel laporan berita" });

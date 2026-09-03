@@ -1,5 +1,5 @@
 const Kuesioner = require("../models/kuesioner.model");
-const ExcelJS = require("exceljs");
+const XLSX = require("xlsx");
 
 // Controller untuk membuat kuesioner (User bertanya / Admin menjawab)
 exports.createKuesioner = async (req, res) => {
@@ -286,25 +286,11 @@ exports.exportKuesionerToExcel = async (req, res) => {
     // Ambil data kuesioner dengan filter yang sama
     const result = await Kuesioner.getSearchPaginatedKuesioner(params);
 
-    // Buat workbook dan worksheet
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet("Kuesioner");
-
-    // Set kolom header Excel
-    worksheet.columns = [
-      { header: "ID", key: "id", width: 8 },
-      { header: "ID User", key: "id_users", width: 10 },
-      { header: "Username", key: "username_users", width: 20 },
-      { header: "Role", key: "role", width: 15 },
-      { header: "Pesan", key: "pesan", width: 40 },
-      { header: "Parent ID", key: "parent_id", width: 10 },
-      { header: "Admin Reply", key: "is_admin_reply", width: 10 },
-      { header: "Status", key: "status", width: 12 },
-      { header: "Created At", key: "created_at", width: 20 },
-    ];
-
-    // Tambahkan data ke worksheet
-    result.data.forEach((row) => worksheet.addRow(row));
+    // Buat workbook dan worksheet menggunakan XLSX
+    const ws = XLSX.utils.json_to_sheet(result.data || []);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Kuesioner");
+    const buf = XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
 
     // Set header response untuk download Excel
     res.setHeader(
@@ -316,9 +302,7 @@ exports.exportKuesionerToExcel = async (req, res) => {
       `attachment; filename="kuesioner.xlsx"`
     );
 
-    // Write dan end response
-    await workbook.xlsx.write(res);
-    res.end();
+    res.send(buf);
   } catch (error) {
     console.error("Export Error:", error);
     res.status(500).json({ message: "Gagal export Excel kuesioner" });
