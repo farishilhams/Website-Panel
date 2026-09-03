@@ -1,6 +1,6 @@
-# 🏬 MPStore Web Panel
+# 🏬 Website Panel
 
-Platform panel terpadu **MPStore Indonesia** berbasis **Monorepo** yang mengintegrasikan aplikasi Frontend dan Backend dengan sistem keamanan bertingkat, 5 peran pengguna (*Role-Based Access Control / RBAC*), dan desain modern responsif (*Mobile-First*).
+Platform panel terpadu berbasis **Monorepo** yang mengintegrasikan aplikasi Frontend dan Backend dengan sistem keamanan bertingkat, 5 peran pengguna (*Role-Based Access Control / RBAC*), dan desain modern responsif (*Mobile-First*).
 
 ---
 
