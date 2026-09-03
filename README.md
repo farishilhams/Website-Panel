@@ -1,63 +1,60 @@
 # 🏬 Website Panel MPStore
 
-Platform web panel manajemen ekosistem digital MPStore terpadu berbasis arsitektur **Modern Full-Stack Single Project** yang menggabungkan antarmuka Frontend modern dan layanan RESTful API Backend dengan sistem keamanan berlapis, 5 peran pengguna (*Role-Based Access Control / RBAC*), serta desain responsif (*Mobile-First*).
+Platform web panel manajemen operasional dan ekosistem digital terpadu berbasis **Full-Stack Single Project** yang mengintegrasikan aplikasi Frontend dan Backend dengan sistem keamanan bertingkat, 5 peran pengguna (*Role-Based Access Control / RBAC*), dan antarmuka modern responsif (*Mobile-First*).
 
 ---
 
-## 📁 Struktur Direktori Terpadu (Full-Stack Unified)
-
-Struktur proyek kini disatukan dalam satu repositori utama yang bersih, efisien, dan siap dideploy ke **Vercel** dengan arsitektur *Zero-Config*:
+## 📁 Struktur Direktori Proyek
 
 ```plaintext
 Website Panel MPStore/
-├── src/                         # Seluruh kode sumber Frontend (React 19 + Vite 6 + TailwindCSS 4)
-│   ├── components/              # Komponen modular: Admin, Reseller, Viewer, dan Shared
-│   ├── pages/                   # Halaman dashboard, profil, dan modul fitur per role
-│   ├── layouts/                 # Layout peran: AdminLayout, ResellerLayout, ViewerLayout
-│   ├── utils/                   # Helper API (Axios), autentikasi, audit log, data cache
-│   └── Auth/                    # Portal Login, Register, Logout, dan Redirect Role
+├── src/                     # Seluruh Komponen, Halaman, dan Layout Frontend (React + Vite)
+│   ├── components/          # Komponen UI Admin, Reseller, Viewer, dan Shared
+│   ├── pages/               # Halaman dashboard & modul fitur 5 role
+│   ├── layouts/             # Layout terpisah (AdminLayout, ResellerLayout, ViewerLayout)
+│   ├── utils/               # Helper API, autentikasi JWT, audit log, data cache
+│   └── Auth/                # Alur Login, Register, Logout, Redirect
 │
-├── public/                      # Aset gambar publik, logo MPStore, favicon, ikon PWA
+├── api/                     # Serverless API Handler
+│   └── index.js             # Entry point API runtime
 │
-├── api/                         # Serverless Function Entrypoint untuk Vercel
-│   └── index.js                 # Handler eksekusi Express API di cloud serverless
+├── controllers/             # 15 Controller modul logika bisnis backend
+├── routes/                  # 15 Rute API terproteksi JWT & RBAC
+├── middlewares/             # Autentikasi JWT, validasi input & upload multer
+├── models/                  # Abstraksi data layer Supabase PostgreSQL
+├── database/                # Skema SQL database Supabase
+├── config/                  # Konfigurasi Supabase & Environment
+├── utils/                   # Utilitas helper backend (storage, dll)
+├── uploads/                 # Direktori upload file lokal
+├── public/                  # Aset statis (Logo MPStore, favicon, ikon web)
 │
-├── controllers/                 # 15 Controller logika bisnis & respon API
-├── routes/                      # 15 Modul rute API terproteksi JWT & otorisasi RBAC
-├── middlewares/                 # Middleware Auth JWT, verifikasi role, validasi input, Multer
-├── models/                      # Abstraksi data layer Supabase Cloud Database (PostgreSQL)
-├── database/                    # Skema SQL Supabase & file cadangan database
-├── config/                      # Konfigurasi Supabase client & environment variable
-├── utils/                       # Utilitas backend (Supabase Storage upload, format data)
-├── uploads/                     # Direktori penampungan berkas sementara
-│
-├── app.js                       # Konfigurasi aplikasi Express, CORS dinamis & security headers
-├── server.js                    # Server runner Express untuk lingkungan lokal (Port 3001)
-├── vite.config.ts               # Konfigurasi Vite dengan proxy otomatis ke backend lokal
-├── vercel.json                  # Routing pintar: /api/* ke backend serverless, rute lain ke Vite SPA
-├── package.json                 # Manajemen dependensi tunggal gabungan Frontend & Backend
-└── .gitignore                   # Proteksi kredensial .env, build output (dist), & node_modules
+├── app.js                   # Konfigurasi aplikasi Express & middleware keamanan
+├── server.js                # Runner server backend lokal
+├── vite.config.ts           # Konfigurasi Vite & proxy rute API lokal
+├── vercel.json              # Konfigurasi perutean cerdas API & SPA
+├── package.json             # Dependensi terpadu Frontend & Backend
+└── .gitignore               # Proteksi kredensial .env & dependensi
 ```
 
 ---
 
 ## 👥 5 Tingkat Peran Pengguna (RBAC)
 
-Platform ini menyediakan 5 portal pengalaman yang dirancang spesifik sesuai tanggung jawab pengguna:
+Platform ini memiliki 5 portal pengalaman yang disesuaikan secara khusus berdasarkan hak akses:
 
-| Peran | Username Default | Password Default | Hak Akses & Fitur Utama |
-| :--- | :--- | :--- | :--- |
-| **Super Admin** | `super-admin` | `superadmin` | Kendali penuh seluruh modul, manajemen akun user, audit logging keamanan sistem, dan monitor kesehatan server (*live*) |
-| **Content Admin** | `content-admin` | `superadmin` | Kurasi artikel berita, banner slider utama, popup promosi dialog, materi edukasi tips, dan siaran pengumuman |
-| **Marketing** | `marketing` | `superadmin` | Manajemen kampanye promo flyer/PDF, katalog voucher loyalty rewards, banner slider, dan running text ticker |
-| **Mitra Reseller** | `reseller` | `superadmin` | Portal e-commerce mitra, penukaran poin loyalty rewards, pencarian jaringan gerai M-Point, dan pohon relasi referral |
-| **Viewer (Publik)** | `viewer` | `superadmin` | Portal majalah digital publik, baca berita terkini, info promo aktif, tips usaha, dan pengisian survei kuesioner |
+| Peran | Kredensial Default | Hak Akses & Fitur Utama |
+| :--- | :--- | :--- |
+| **Super Admin** | `super-admin` / `superadmin` | Kendali penuh seluruh modul, manajemen akun pengguna, audit logging keamanan, dan monitor kesehatan server live |
+| **Content Admin** | `content-admin` / `contentadmin` | Kurasi artikel berita, banner slider utama, popup promosi dialog, materi edukasi tips, dan siaran pengumuman |
+| **Marketing** | `marketing` / `marketing123` | Manajemen kampanye promo flyer/PDF, katalog voucher loyalty rewards, banner slider, dan running text ticker |
+| **Mitra Reseller** | `reseller` / `reseller123` | Portal e-commerce mitra, penukaran poin loyalty rewards, pencarian jaringan gerai M-Point, dan pohon relasi referral |
+| **Viewer (Publik)** | `viewer` / `viewer123` | Portal majalah digital publik, baca berita terkini, info promo aktif, tips usaha, dan pengisian survei kuesioner |
 
 ---
 
 ## 🔌 15 Endpoint RESTful API Backend
 
-Seluruh layanan backend terintegrasi langsung dengan Supabase PostgreSQL dan terproteksi autentikasi JWT:
+Layanan backend terintegrasi dengan Supabase PostgreSQL dan terproteksi JWT Authentication:
 
 | Endpoint | Metode | Deskripsi Modul Layanan |
 | :--- | :--- | :--- |
@@ -75,17 +72,15 @@ Seluruh layanan backend terintegrasi langsung dengan Supabase PostgreSQL dan ter
 | `/api/interaksi` | `GET, POST, PUT` | Struktur pohon relasi agen referral downline mitra |
 | `/api/intro` | `GET, POST, PUT, DELETE` | Slide panduan onboarding interaktif pengguna baru |
 | `/api/news_reports`| `GET, POST, DELETE` | Laporan moderasi tanggapan dan komentar artikel |
-| `/api/system/health` | `GET, POST` | Monitor latensi database Supabase, penggunaan RAM, dan status uptime |
+| `/api/system/health` | `GET, POST` | Monitor latensi database Supabase, penggunaan RAM, dan uptime |
 
 ---
 
 ## 🛡️ Standar Keamanan & Infrastruktur
 
-- **Same-Domain Deployment**: Frontend dan API Backend berjalan di bawah domain yang sama pada Vercel, mengeliminasi isu CORS dan risiko keamanan antar-domain.
-- **Dynamic CORS Whitelist**: Pembatasan domain asal (*origin*) yang memvalidasi klien resmi dan permintaan internal.
+- **Dynamic CORS Whitelist**: Pembatasan domain asal (*origin*) yang mengizinkan akses klien terdaftar dan sesi server-to-server.
 - **HTTP Security Headers**: Penerapan `X-Content-Type-Options: nosniff`, `X-Frame-Options: SAMEORIGIN`, dan `X-XSS-Protection: 1; mode=block`.
-- **Pure JavaScript Hashing**: Menggunakan `bcryptjs` murni tanpa dependensi native C++ untuk kompatibilitas lintas sistem operasi dan lingkungan serverless.
-- **Session-Only Storage**: Proteksi sesi aman otomatis terhapus saat tab browser ditutup demi keamanan perangkat publik.
+- **Session-Only Storage**: Proteksi sesi aman otomatis terhapus saat browser ditutup untuk keamanan di perangkat publik.
 - **Credential Protection**: Seluruh kredensial sensitif disimpan secara eksklusif dalam environment variables dan terlindungi oleh `.gitignore`.
 
 ---
@@ -96,63 +91,46 @@ Seluruh layanan backend terintegrasi langsung dengan Supabase PostgreSQL dan ter
 - **Framework**: React 19 + Vite 6
 - **Styling**: TailwindCSS 4 + Custom Glassmorphism Design Tokens (Brand MPStore: `#0033CC` & `#00BB33`)
 - **Routing**: React Router DOM v7 (Role-Aware Smart Routing & Layout Switcher)
-- **Icons**: Lucide React & React Icons
-- **Fitur Khusus**: Spotlight Command Palette (Pencarian Cepat `Ctrl+K`), Onboarding Tour Modal, Animasi Interaktif, Network Status Offline Banner, Modal Zoom Gambar Responsif.
+- **Icons**: Lucide React
+- **Fitur Khusus**: Spotlight Command Palette (Pencarian Cepat), Onboarding Tour Modal, Smooth Count Up Animation, Network Status Offline Banner, Safe Touch Image Modal.
 
 ### Backend
 - **Runtime**: Node.js (Express 5)
 - **Database**: PostgreSQL (Supabase Cloud Database)
-- **Autentikasi**: JSON Web Token (JWT) + Bcrypt Password Hashing (`bcryptjs`)
-- **Ekspor Data**: SheetJS (`xlsx`) ringan & cepat untuk laporan Excel
-- **File Upload**: Multer + Supabase Storage Cloud Integration
+- **Autentikasi**: JSON Web Token (JWT) + BcryptJS Password Hashing
+- **File Upload**: Multer Storage Handler
+- **Data Export**: SheetJS (XLSX) Lightweight Reporting
 
 ---
 
-## 🚀 Panduan Menjalankan di Komputer Lokal
+## 💻 Panduan Menjalankan Secara Lokal
 
 ### 1. Instalasi Dependensi
-Jalankan di folder utama:
+Jalankan perintah ini di direktori utama:
 ```bash
 npm install
 ```
 
 ### 2. Menjalankan Aplikasi
-Anda dapat memilih perintah yang paling sesuai dengan kebutuhan:
+Pilih mode yang diinginkan:
 
-```bash
-# OPSI A: Jalankan Frontend dan Backend SEKALIGUS (Rekomendasi!)
-npm run dev:all
+- **Jalankan Frontend & Backend Sekaligus (Rekomendasi)**:
+  ```bash
+  npm run dev:all
+  ```
+  *Frontend aktif di `http://localhost:5173` dan Backend aktif di `http://localhost:3001`.*
 
-# OPSI B: Jalankan Frontend Saja
-npm run dev
-# Website aktif di http://localhost:5173
+- **Jalankan Frontend Saja**:
+  ```bash
+  npm run dev
+  ```
 
-# OPSI C: Jalankan Backend Saja
-npm run server
-# API aktif di http://localhost:3001
-```
+- **Jalankan Backend Saja**:
+  ```bash
+  npm run server
+  ```
 
-### 3. Membangun Bundle Produksi (Build)
-```bash
-npm run build
-# Hasil build terkompilasi ke folder /dist
-```
-
----
-
-## 🌐 Panduan Deployment ke Vercel (100% Gratis)
-
-1. Buka [vercel.com](https://vercel.com/) dan login dengan akun GitHub Anda.
-2. Klik tombol **`Add New...`** ➔ Pilih **`Project`**.
-3. Di samping repositori **`Website-Panel`**, klik tombol **`Import`**.
-4. **Konfigurasi Project**:
-   - **Framework Preset**: Pilih **`Vite`** *(otomatis terdeteksi)*
-   - **Root Directory**: Biarkan default **`./`** *(tanpa perlu diubah)*
-   - **Build & Output Settings**: Biarkan default (`npm run build` ➔ `dist`)
-5. **Environment Variables**:
-   Buka accordion **Environment Variables** dan tambahkan 4 kunci berikut:
-   - `JWT_SECRET` = `supersecretjwtkey`
-   - `SUPABASE_URL` = `https://evhbcdcgqjfjwyrqdmau.supabase.co`
-   - `SUPABASE_KEY` = `<YOUR_SUPABASE_SERVICE_ROLE_KEY>` (lihat di file .env lokal Anda)
-   - `SUPABASE_STORAGE_BUCKET` = `website panel`
-6. Klik **`Deploy`**. Dalam 20–30 detik, website panel MPStore Anda akan langsung aktif secara publik!
+- **Build Produksi**:
+  ```bash
+  npm run build
+  ```
