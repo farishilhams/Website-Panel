@@ -1,9 +1,9 @@
 import axios from "axios";
 import { getAuthToken, clearAuthSession } from "./authHelper";
 
-// Base API URL from Vite environment or default localhost:3001
+// Base API URL: In production on Vercel, uses same-origin (""), locally uses localhost:3001
 export const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:3001";
+  import.meta.env.VITE_API_BASE_URL ?? (import.meta.env.PROD ? "" : "http://localhost:3001");
 
 // Axios client
 export const api = axios.create({
