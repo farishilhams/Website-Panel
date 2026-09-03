@@ -85,25 +85,3 @@ npm run dev
 # Aplikasi web berjalan di http://localhost:5173
 ```
 
----
-
-## ☁️ Panduan Hosting ke Vercel (Monorepo)
-
-Aplikasi ini telah disiapkan untuk langsung di-hosting ke **Vercel**:
-
-1. **Deploy Frontend**:
-   - Di dashboard Vercel, pilih repository ini.
-   - Set **Root Directory** ke: `Frontend Website Panel`
-   - Framework Preset: **Vite**
-   - Tambahkan Environment Variable:
-     - `VITE_API_URL` = URL backend Anda (misal `https://api-mpstore.vercel.app` atau URL backend produksi).
-
-2. **Deploy Backend**:
-   - Buat project baru di Vercel yang mengarah ke repository yang sama.
-   - Set **Root Directory** ke: `Backend Website Panel`
-   - Framework Preset: **Other**
-   - Tambahkan Environment Variables dari `.env`:
-     - `SUPABASE_URL` = URL project Supabase Anda
-     - `SUPABASE_KEY` = Supabase Anon/Service Key
-     - `JWT_SECRET` = Kunci rahasia JWT Anda
-     - `PORT` = `3001`
