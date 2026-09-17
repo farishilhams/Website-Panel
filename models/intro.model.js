@@ -95,9 +95,13 @@ exports.getSearchPaginatedIntro = async (params = {}) => {
   }
 
   if (search) {
-    query = query.or(
-      `title.ilike.%${search}%,description.ilike.%${search}%`
-    );
+    const { sanitizePostgrestFilter } = require("../utils/securityHelper");
+    const safeSearch = sanitizePostgrestFilter(search);
+    if (safeSearch) {
+      query = query.or(
+        `title.ilike.%${safeSearch}%,description.ilike.%${safeSearch}%`
+      );
+    }
   }
 
   const isAsc = String(sortOrder).toUpperCase() === "ASC";

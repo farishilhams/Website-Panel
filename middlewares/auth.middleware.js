@@ -1,25 +1,38 @@
 const jwt = require("jsonwebtoken");
 const { jwtSecret } = require("../config/config");
+const User = require("../models/user.model");
 
-// Middleware verifikasi token untuk user saja
-exports.verifyToken = (req, res, next) => {
+// Middleware verifikasi token dengan validasi sesi di sisi server
+exports.verifyToken = async (req, res, next) => {
   const tokenHeader = req.headers["authorization"];
 
   if (!tokenHeader || !tokenHeader.startsWith("Bearer ")) {
-    return res.status(403).json({ message: "Token tidak ditemukan" });
+    return res.status(401).json({ message: "Akses ditolak: Token autentikasi tidak ditemukan" });
   }
 
   const token = tokenHeader.split(" ")[1];
 
-  jwt.verify(token, jwtSecret, (err, decoded) => {
-    if (err) return res.status(401).json({ message: "Token tidak valid" });
+  jwt.verify(token, jwtSecret, async (err, decoded) => {
+    if (err || !decoded || !decoded.id_users) {
+      return res.status(401).json({ message: "Sesi tidak valid atau telah berakhir" });
+    }
 
-    if (decoded.id_users) {
+    try {
+      // Validasi status akun pengguna di server
+      const user = await User.getUserById(decoded.id_users);
+      if (!user) {
+        return res.status(401).json({ message: "Akun pengguna tidak ditemukan atau telah dinonaktifkan" });
+      }
+
+      req.userId = user.id_users;
+      req.role = user.role; // Gunakan role mutakhir dari database
+      req.user = user;
+      next();
+    } catch (dbErr) {
+      // Fallback aman jika database timeout / offline sementara
       req.userId = decoded.id_users;
       req.role = decoded.role;
       next();
-    } else {
-      return res.status(401).json({ message: "Unauthorized" });
     }
   });
 };

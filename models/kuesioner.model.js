@@ -130,6 +130,18 @@ exports.getSearchPaginatedKuesioner = async (params = {}) => {
     { count: "exact" }
   );
 
+  if (params.id_users) {
+    query = query.eq("id_users", parseInt(params.id_users, 10));
+  }
+
+  if (search) {
+    const { sanitizePostgrestFilter } = require("../utils/securityHelper");
+    const safeSearch = sanitizePostgrestFilter(search);
+    if (safeSearch) {
+      query = query.ilike("pesan", `%${safeSearch}%`);
+    }
+  }
+
   if (role !== null && role !== undefined && role !== "") {
     query = query.eq("role", role);
   }

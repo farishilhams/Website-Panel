@@ -3,18 +3,18 @@ const router = express.Router();
 const systemController = require("../controllers/system.controller");
 const { verifyToken, verifyRole } = require("../middlewares/auth.middleware");
 
-// Endpoint status kesehatan server (Super Admin & Content Admin)
+// Endpoint status kesehatan server (Hanya Super Admin)
 router.get(
   "/",
   verifyToken,
-  verifyRole(["super_admin", "content_admin"]),
+  verifyRole(["super_admin"]),
   systemController.getSystemHealth
 );
 
 router.get(
   "/health",
   verifyToken,
-  verifyRole(["super_admin", "content_admin"]),
+  verifyRole(["super_admin"]),
   systemController.getSystemHealth
 );
 

@@ -1,7 +1,9 @@
 const path = require("path");
 const fs = require("fs");
+const crypto = require("crypto");
 const supabase = require("../config/supabase");
 const { supabaseBucket } = require("../config/config");
+const { getMimeTypeFromMagicBytes } = require("./securityHelper");
 
 /**
  * Upload buffer file ke Supabase Storage (atau fallback lokal jika credentials belum diisi)
@@ -10,10 +12,18 @@ const { supabaseBucket } = require("../config/config");
  * @returns {Promise<string>} - Public URL gambar
  */
 async function uploadFileToStorage(file, folder = "general") {
-  if (!file) return null;
+  if (!file || !file.buffer) return null;
+
+  // Validasi biner integritas file
+  const verifiedMime = getMimeTypeFromMagicBytes(file.buffer);
+  if (!verifiedMime) {
+    throw new Error("Tipe file tidak didukung atau tanda tangan biner file rusak.");
+  }
 
   const ext = path.extname(file.originalname).toLowerCase();
-  const fileName = `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
+  // Gunakan UUID acak kriptografis (Prinsip 12)
+  const safeRandomId = crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${crypto.randomBytes(8).toString("hex")}`;
+  const fileName = `${safeRandomId}${ext}`;
   const filePath = `${folder}/${fileName}`;
 
   // Jika Supabase URL dan Key sudah di-set
@@ -22,7 +32,7 @@ async function uploadFileToStorage(file, folder = "general") {
       const { data, error } = await supabase.storage
         .from(supabaseBucket)
         .upload(filePath, file.buffer, {
-          contentType: file.mimetype,
+          contentType: verifiedMime,
           upsert: true,
         });
 

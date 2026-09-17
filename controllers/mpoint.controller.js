@@ -63,6 +63,13 @@ exports.getMpointById = async (req, res) => {
     try {
       // Ambil parameter ID dari URL params
       const idreseller = req.params.id;
+      const { role, userId } = req;
+
+      // Proteksi IDOR: reseller hanya bisa melihat data miliknya sendiri
+      if (role === "reseller" && String(idreseller) !== String(userId)) {
+        return res.status(403).json({ message: "Tidak diizinkan melihat data poin akun lain" });
+      }
+
       // Panggil model untuk get mpoint by id
       const result = await Mpoint.getMpointById(idreseller);
       // Cek apakah data ditemukan

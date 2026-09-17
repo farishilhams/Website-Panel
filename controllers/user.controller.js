@@ -182,7 +182,7 @@ exports.login = async (req, res) => {
     // Cari user berdasarkan email ATAU username
     const user = await User.getUserByEmailOrUsername(identifier);
     if (!user) {
-      return res.status(401).json({ message: "Akun dengan email / username tersebut tidak ditemukan" });
+      return res.status(401).json({ message: "Username, email, atau kata sandi tidak valid" });
     }
 
     const isPasswordValid = await bcrypt.compare(
@@ -190,7 +190,7 @@ exports.login = async (req, res) => {
       user.password_users
     );
     if (!isPasswordValid) {
-      return res.status(401).json({ message: "Kata sandi yang Anda masukkan salah" });
+      return res.status(401).json({ message: "Username, email, atau kata sandi tidak valid" });
     }
 
     const token = jwt.sign(
@@ -317,8 +317,11 @@ exports.getUserId = async (req, res) => {
     const allAvatars = await getAvatarsStore();
     const avatarData = allAvatars[String(id)] || {};
 
+    const safeUser = { ...user };
+    delete safeUser.password_users;
+
     res.status(200).json({
-      ...user,
+      ...safeUser,
       avatar_custom: avatarData.avatar_custom || "",
       avatar_preset: avatarData.avatar_preset || "from-blue-600 to-indigo-600",
     });
@@ -376,11 +379,15 @@ exports.getSearchPaginatedUsers = async (req, res) => {
     });
 
     const avatars = await getAvatarsStore();
-    const enrichedUsers = users.map((u) => ({
-      ...u,
-      avatar_custom: avatars[String(u.id_users)]?.avatar_custom || "",
-      avatar_preset: avatars[String(u.id_users)]?.avatar_preset || "from-blue-600 to-indigo-600",
-    }));
+    const enrichedUsers = users.map((u) => {
+      const safe = { ...u };
+      delete safe.password_users;
+      return {
+        ...safe,
+        avatar_custom: avatars[String(u.id_users)]?.avatar_custom || "",
+        avatar_preset: avatars[String(u.id_users)]?.avatar_preset || "from-blue-600 to-indigo-600",
+      };
+    });
 
     res.status(200).json({
       message: "User berhasil diambil",
@@ -427,40 +434,11 @@ exports.getUsersStats = async (req, res) => {
   }
 };
 
-// Controller untuk reset password publik (Lupa Kata Sandi dari login)
-exports.publicResetPassword = async (req, res) => {
-  try {
-    const { username_users, new_password, email_users } = req.body;
-    const identifier = username_users || email_users;
-
-    if (!identifier || !new_password) {
-      return res.status(400).json({
-        message: "Username/Email dan kata sandi baru wajib diisi",
-      });
-    }
-
-    if (new_password.length < 6) {
-      return res.status(400).json({
-        message: "Kata sandi baru minimal 6 karakter",
-      });
-    }
-
-    const user = await User.getUserByEmailOrUsername(identifier.trim());
-    if (!user) {
-      return res.status(404).json({
-        message: "Akun dengan username atau email tersebut tidak ditemukan",
-      });
-    }
-
-    const hashedPassword = await bcrypt.hash(new_password, 10);
-    await User.resetUserPassword(user.id_users, hashedPassword);
-
-    res.status(200).json({
-      status: "success",
-      message: "Kata sandi berhasil diperbarui. Silakan login kembali.",
-    });
-  } catch (err) {
-    console.error("Public Reset Password Error:", err);
-    res.status(500).json({ message: "Gagal memperbarui kata sandi" });
-  }
+// Endpoint dinonaktifkan demi keamanan (Prinsip 1 & 4)
+exports.publicResetPassword = (req, res) => {
+  return res.status(403).json({
+    status: "fail",
+    message:
+      "Layanan pemulihan kata sandi publik dinonaktifkan demi perlindungan akun. Silakan hubungi Super Admin MPStore untuk verifikasi identitas akun Anda.",
+  });
 };

@@ -13,15 +13,23 @@ const {
   validateResetPassword,
   validateUsersQueryFilters,
 } = require("../middlewares/validation.middleware");
+const { authLimiter } = require("../middlewares/rateLimiter.middleware");
 
-// Route untuk Register User - Public Endpoint, tidak butuh verifikasi
-router.post("/register", validateUserRegister, userController.register);
+// Route untuk Register User - Dilindungi authLimiter
+router.post(
+  "/register",
+  authLimiter,
+  validateUserRegister,
+  userController.register
+);
 
-// Route untuk login User - Public endpoint, tidak butuh verifikasi
-router.post("/login", validateUserLogin, userController.login);
-
-// Route untuk reset password publik (Lupa Kata Sandi dari login)
-router.post("/reset-password", userController.publicResetPassword);
+// Route untuk login User - Dilindungi authLimiter
+router.post(
+  "/login",
+  authLimiter,
+  validateUserLogin,
+  userController.login
+);
 
 // Route untuk mendapatkan users dengan pagination - SATU ROUTE UNTUK SEMUA FILTER
 // Bisa filter by: role, search, pagination

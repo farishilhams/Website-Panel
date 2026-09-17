@@ -32,9 +32,13 @@ exports.searchPaginatedPengumuman = async (filters = {}) => {
   }
 
   if (filters.search) {
-    query = query.or(
-      `title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`
-    );
+    const { sanitizePostgrestFilter } = require("../utils/securityHelper");
+    const safeSearch = sanitizePostgrestFilter(filters.search);
+    if (safeSearch) {
+      query = query.or(
+        `title.ilike.%${safeSearch}%,description.ilike.%${safeSearch}%`
+      );
+    }
   }
 
   query = query.order("created_at", { ascending: false });

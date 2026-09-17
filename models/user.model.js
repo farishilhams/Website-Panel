@@ -33,10 +33,17 @@ exports.createUser = async ({
 
   return { insertId: data.id_users, ...data };
 };
+const { sanitizePostgrestFilter } = require("../utils/securityHelper");
 
-// LOGIN - FIND BY EMAIL OR USERNAME
+// Kolom aman untuk query profil / publik tanpa mengekspos hash password
+const SAFE_USER_FIELDS =
+  "id_users, username_users, email_users, telpon_users, address_users, role, created_at, updated_at";
+
+// LOGIN - FIND BY EMAIL OR USERNAME (Termasuk password_users untuk verifikasi hash internal)
 exports.getUserByEmailOrUsername = async (identifier) => {
-  const cleanId = String(identifier || "").trim();
+  const cleanId = sanitizePostgrestFilter(identifier);
+  if (!cleanId) return null;
+
   const { data, error } = await supabase
     .from("users")
     .select("*")
@@ -52,10 +59,13 @@ exports.getUserByEmailOrUsername = async (identifier) => {
 
 // LOGIN - FIND BY EMAIL
 exports.getUsersByEmail = async (email) => {
+  const cleanEmail = sanitizePostgrestFilter(email);
+  if (!cleanEmail) return null;
+
   const { data, error } = await supabase
     .from("users")
     .select("*")
-    .eq("email_users", email)
+    .eq("email_users", cleanEmail)
     .maybeSingle();
 
   if (error) {
@@ -67,10 +77,13 @@ exports.getUsersByEmail = async (email) => {
 
 // GET USER BY USERNAME
 exports.getUsersByUsername = async (username) => {
+  const cleanUsername = sanitizePostgrestFilter(username);
+  if (!cleanUsername) return null;
+
   const { data, error } = await supabase
     .from("users")
-    .select("*")
-    .eq("username_users", username)
+    .select(SAFE_USER_FIELDS)
+    .eq("username_users", cleanUsername)
     .maybeSingle();
 
   if (error) {
@@ -80,11 +93,11 @@ exports.getUsersByUsername = async (username) => {
   return data;
 };
 
-// GET USER BY ID
+// GET USER BY ID (Aman dari kebocoran hash password)
 exports.getUserById = async (id) => {
   const { data, error } = await supabase
     .from("users")
-    .select("*")
+    .select(SAFE_USER_FIELDS)
     .eq("id_users", id)
     .maybeSingle();
 
@@ -95,18 +108,21 @@ exports.getUserById = async (id) => {
   return data;
 };
 
-// GET SEARCH PAGINATED USER
+// GET SEARCH PAGINATED USER (Aman dari kebocoran hash password & PostgREST injection)
 exports.searchPaginatedUsers = async (filters = {}) => {
-  let query = supabase.from("users").select("*");
+  let query = supabase.from("users").select(SAFE_USER_FIELDS);
 
   if (filters.role) {
     query = query.eq("role", filters.role);
   }
 
   if (filters.search) {
-    query = query.or(
-      `username_users.ilike.%${filters.search}%,email_users.ilike.%${filters.search}%`
-    );
+    const safeSearch = sanitizePostgrestFilter(filters.search);
+    if (safeSearch) {
+      query = query.or(
+        `username_users.ilike.%${safeSearch}%,email_users.ilike.%${safeSearch}%`
+      );
+    }
   }
 
   query = query.order("created_at", { ascending: false });

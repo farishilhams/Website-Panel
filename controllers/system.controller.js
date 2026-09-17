@@ -57,14 +57,15 @@ exports.getSystemHealth = async (req, res) => {
   }
 
   const responseTimeMs = Date.now() - startTime;
+  const isProd = process.env.NODE_ENV === "production";
 
   res.status(200).json({
     status: "success",
     system: {
       server_name: "MPStore Backend API",
       environment: process.env.NODE_ENV || "development",
-      node_version: process.version,
-      platform: `${os.type()} (${os.arch()})`,
+      node_version: isProd ? "Active LTS" : process.version,
+      platform: isProd ? "Cloud Infrastructure" : `${os.type()} (${os.arch()})`,
       cpu_cores: os.cpus().length,
       server_time: new Date().toISOString(),
       uptime_seconds: uptimeSeconds,
@@ -75,7 +76,7 @@ exports.getSystemHealth = async (req, res) => {
       provider: "Supabase PostgreSQL",
       status: dbStatus,
       latency_ms: dbLatencyMs,
-      error: dbError,
+      error: isProd && dbError ? "Koneksi database mengalami gangguan" : dbError,
     },
     memory: {
       heap_used_mb: parseFloat(formatMB(memUsage.heapUsed)),

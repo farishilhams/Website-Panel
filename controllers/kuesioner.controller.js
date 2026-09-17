@@ -93,11 +93,11 @@ exports.getKuesionerById = async (req, res) => {
       return res.status(404).json({ message: "Kuesioner tidak ditemukan" });
     }
 
-    // Validasi: viewer hanya bisa melihat kuesioner milik sendiri
-    if (role === "viewer" && result.id_users !== userId) {
+    // Validasi IDOR: non-admin hanya bisa melihat kuesioner milik sendiri
+    if (!["super_admin", "content_admin"].includes(role) && result.id_users !== userId) {
       return res
         .status(403)
-        .json({ message: "Tidak diizinkan melihat kuesioner ini" });
+        .json({ message: "Tidak diizinkan melihat kuesioner pengguna lain" });
     }
     res.status(200).json(result);
   } catch (error) {
@@ -204,6 +204,10 @@ exports.getSearchPaginatedKuesioner = async (req, res) => {
     const sortBy = req.query.sortBy || "created_at";
     const sortOrder = req.query.sortOrder || "DESC";
 
+    // IDOR Protection: jika bukan super_admin/content_admin, batasi data hanya milik sendiri
+    const isPrivilegedAdmin = ["super_admin", "content_admin"].includes(req.role);
+    const filterUserId = !isPrivilegedAdmin ? req.userId : (req.query.id_users || null);
+
     // Panggil model Search
     const kuesioner = await Kuesioner.getSearchPaginatedKuesioner({
       search,
@@ -216,6 +220,7 @@ exports.getSearchPaginatedKuesioner = async (req, res) => {
       sortOrder,
       limit,
       offset,
+      id_users: filterUserId,
     });
 
     if (kuesioner.data.length === 0) {

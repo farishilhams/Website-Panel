@@ -9,36 +9,58 @@ app.disable("x-powered-by");
 
 // Daftar origin yang diizinkan untuk CORS
 const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  "https://website-panel-mpstore.vercel.app",
   "http://localhost:5173",
   "http://127.0.0.1:5173",
   "http://localhost:3000",
   "http://127.0.0.1:3000",
-];
+].filter(Boolean);
 
-// Menggunakan middleware CORS dengan validasi origin dinamis
+// Menggunakan middleware CORS dengan validasi origin ketat (anti wildcard reflection)
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Izinkan request tanpa origin (seperti curl/Postman/server-to-server) atau origin terdaftar
-      if (!origin || allowedOrigins.includes(origin) || /^http:\/\/localhost:\d+$/.test(origin) || /^http:\/\/127\.0\.0\.1:\d+$/.test(origin)) {
+      // Izinkan request tanpa origin (seperti curl/Postman/serverless internal) atau origin terdaftar
+      if (
+        !origin ||
+        allowedOrigins.includes(origin) ||
+        (process.env.NODE_ENV !== "production" &&
+          (/^http:\/\/localhost:\d+$/.test(origin) ||
+            /^http:\/\/127\.0\.0\.1:\d+$/.test(origin)))
+      ) {
         callback(null, true);
       } else {
-        callback(null, true);
+        callback(new Error("Akses ditolak oleh kebijakan CORS server"), false);
       }
     },
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
+    maxAge: 86400,
   })
 );
 
-// Standard HTTP Security Headers Middleware
+// Standard HTTP Security Headers Middleware (Prinsip 7 & 15)
 app.use((req, res, next) => {
   res.setHeader("X-Content-Type-Options", "nosniff");
   res.setHeader("X-Frame-Options", "SAMEORIGIN");
-  res.setHeader("X-XSS-Protection", "1; mode=block");
+  res.setHeader(
+    "Strict-Transport-Security",
+    "max-age=31536000; includeSubDomains; preload"
+  );
+  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  res.setHeader("Permissions-Policy", "geolocation=(), camera=(), microphone=()");
+  res.setHeader(
+    "Content-Security-Policy",
+    "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https: blob:; connect-src 'self' https://*.supabase.co https://website-panel-mpstore.vercel.app;"
+  );
   next();
 });
+
+// Rate limiting umum untuk endpoint /api (Prinsip 14)
+const { apiLimiter } = require("./middlewares/rateLimiter.middleware");
+app.use("/api", apiLimiter);
 
 // Middleware untuk parsing JSON dan data URL-encoded dari request body
 app.use(bodyParser.json()); // Untuk parsing request dengan tipe JSON
@@ -56,7 +78,16 @@ try {
   // Silent fail in read-only serverless environment
 }
 
-app.use("/uploads", express.static(uploadsDir));
+// Sajikan folder uploads dengan isolasi MIME & CSP untuk cegah eksekusi script / Stored XSS (Prinsip 7 & 12)
+app.use(
+  "/uploads",
+  (req, res, next) => {
+    res.setHeader("Content-Security-Policy", "default-src 'none'");
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    next();
+  },
+  express.static(uploadsDir)
+);
 
 // Health check / Root endpoint
 app.get("/", (req, res) => {
@@ -186,13 +217,27 @@ app.use((req, res, next) => {
   });
 });
 
-// Middleware Global Error Handler
+// Middleware Global Error Handler (Prinsip 13: Error Handling Aman)
 app.use((err, req, res, next) => {
-  console.error("Error:", err.message || err);
+  console.error("Internal Server Error:", {
+    message: err.message || err,
+    path: req.originalUrl,
+    method: req.method,
+    stack: process.env.NODE_ENV === "production" ? undefined : err.stack,
+  });
+
   const statusCode = err.status || (err.name === "MulterError" ? 400 : 500);
+  const isProd = process.env.NODE_ENV === "production";
+  
+  // Jika error 500 dan di production, kirim pesan netral tanpa bocorkan detail teknis
+  const clientMessage =
+    statusCode >= 500 && isProd
+      ? "Terjadi kesalahan pada server. Silakan hubungi administrator."
+      : err.message || "Terjadi kesalahan pada pemrosesan permintaan";
+
   res.status(statusCode).json({
     status: "error",
-    message: err.message || "Terjadi kesalahan pada server",
+    message: clientMessage,
   });
 });
 
